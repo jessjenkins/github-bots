@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jessjenkins/github-bots/api"
 	"github.com/jessjenkins/github-bots/config"
+	"github.com/jessjenkins/github-bots/slack"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -16,21 +18,22 @@ var (
 )
 
 type Service struct {
-	Config *config.Config
-	Server *http.Server
-	Router *mux.Router
-	API    *api.API
+	Config      *config.Config
+	Server      *http.Server
+	Router      *mux.Router
+	API         *api.API
+	SlackClient *slack.Client
 }
 
 func Create() (*Service, error) {
 	log.Println("creating service")
-	ctx := context.Background()
 
 	cfg, err := config.Get()
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to retrieve service configuration")
 	}
-	log.Println("got service configuration", cfg)
+	configJson, _ := json.Marshal(cfg)
+	log.Println("got service configuration", string(configJson))
 
 	r := mux.NewRouter()
 
@@ -44,13 +47,19 @@ func Create() (*Service, error) {
 		MaxHeaderBytes:    0,
 	}
 
-	a := api.Init(ctx, r)
+	slack, err := slack.Create(cfg.SlackToken)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create slack client")
+	}
+
+	a := api.Init(slack, r)
 
 	return &Service{
-		Config: cfg,
-		Router: r,
-		API:    a,
-		Server: s,
+		Config:      cfg,
+		Router:      r,
+		API:         a,
+		Server:      s,
+		SlackClient: slack,
 	}, nil
 }
 

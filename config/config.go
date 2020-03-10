@@ -9,6 +9,7 @@ import (
 type Config struct {
 	BindAddr                string        `envconfig:"BIND_ADDR"`
 	GracefulShutdownTimeout time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
+	SlackToken              string        `envconfig:"SLACK_TOKEN"                   json:"-"`
 }
 
 var cfg *Config

@@ -6,17 +6,21 @@ import (
 	"log"
 )
 
+type slackClient interface {
+	SendDirectMessage(ctx context.Context, target string, message string) error
+}
+
 //API provides a struct to wrap the api around
 type API struct {
 	Router *mux.Router
 }
 
-func Init(ctx context.Context, r *mux.Router) *API {
+func Init(slack slackClient, r *mux.Router) *API {
 	api := &API{
 		Router: r,
 	}
 
-	r.HandleFunc("/hello", HelloHandler()).Methods("GET")
+	r.HandleFunc("/hello", HelloHandler(slack)).Methods("GET")
 	return api
 }
 

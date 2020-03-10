@@ -13,12 +13,20 @@ type HelloResponse struct {
 }
 
 // HelloHandler returns function containing a simple hello world example of an api handler
-func HelloHandler() http.HandlerFunc {
+func HelloHandler(slack slackClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		//ctx := req.Context()
+		ctx := req.Context()
+		log.Printf("Hello called")
 
 		response := HelloResponse{
 			Message: helloMessage,
+		}
+
+		err := slack.SendDirectMessage(ctx, "jessjenkins", "moo")
+		if err != nil {
+			log.Printf("ERROR: sending slack message failed: %v", err)
+			http.Error(w, "Failed to send slack message", http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
