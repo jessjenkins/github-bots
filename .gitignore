@@ -13,3 +13,6 @@
 
 # IntelliJ
 .idea/
+
+# Docker environemnt file
+.env
