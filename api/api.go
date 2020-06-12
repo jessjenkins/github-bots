@@ -8,6 +8,7 @@ import (
 
 type slackClient interface {
 	SendDirectMessage(ctx context.Context, target string, message string) error
+	GetUserByEmail(ctx context.Context, email string) (string ,error)
 }
 
 //API provides a struct to wrap the api around

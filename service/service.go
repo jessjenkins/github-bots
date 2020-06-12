@@ -19,7 +19,7 @@ var (
 
 type Service struct {
 	Config      *config.Config
-	Server      *http.Server
+	server      *http.Server
 	Router      *mux.Router
 	API         *api.API
 	SlackClient *slack.Client
@@ -58,7 +58,7 @@ func Create() (*Service, error) {
 		Config:      cfg,
 		Router:      r,
 		API:         a,
-		Server:      s,
+		server:      s,
 		SlackClient: slack,
 	}, nil
 }
@@ -68,7 +68,7 @@ func (svc *Service) Run(svcErrors chan error) error {
 	log.Println("running service")
 
 	go func() {
-		if err := svc.Server.ListenAndServe(); err != nil {
+		if err := svc.server.ListenAndServe(); err != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
 	}()
@@ -84,7 +84,7 @@ func (svc *Service) Close() {
 	defer cancel()
 
 	// stop any incoming requests before closing any outbound connections
-	if err := svc.Server.Shutdown(ctx); err != nil {
+	if err := svc.server.Shutdown(ctx); err != nil {
 		log.Printf("ERROR: failed to shutdown http server: %v", err)
 	}
 

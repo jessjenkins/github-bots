@@ -22,7 +22,14 @@ func HelloHandler(slack slackClient) http.HandlerFunc {
 			Message: helloMessage,
 		}
 
-		err := slack.SendDirectMessage(ctx, "jessjenkins", "moo")
+		user, err := slack.GetUserByEmail(ctx, "jess@jessjenkins.uk")
+		if err != nil {
+			log.Printf("ERROR: looking up slack user failed: %v", err)
+			http.Error(w, "Failed to find user with supplied email address", http.StatusInternalServerError)
+			return
+		}
+
+		err = slack.SendDirectMessage(ctx, user, "moo")
 		if err != nil {
 			log.Printf("ERROR: sending slack message failed: %v", err)
 			http.Error(w, "Failed to send slack message", http.StatusInternalServerError)
